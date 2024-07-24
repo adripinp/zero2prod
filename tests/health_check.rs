@@ -1,28 +1,31 @@
-//use zero2prod::main;
+use std::{fmt::format, net::TcpListener};
+
+use zero2prod::run;
 
 #[tokio::test]
+
 async fn health_check_works() {
-    spawn_app()
+    //Arrange
+    let address =spawn_app();
+    let client = reqwest::Client::new();
+
+    //Act
+    let response = client
+        .get(&format!("{}/health_check", &address))
+        .send()
+        .await
+        .expect("Failed to send request.");
+        
+    assert!(response.status().is_success());
+    assert_eq!(Some(0), response.content_length());
+
 }
 
-//async fn health_check_works() {
-//    spawn_app().await.expect("Failed to spawn our app.");
-//    let client = reqwest::Client::new();
-
-//    let response = client
-//        .get("http://127.0.0.1:8080/health")
-//        .send()
-//        .await
-//        .expect("Failed to send request.");
-        
-//    assert!(response.status().is_success());
-//    assert_eq!(Some(0), response.content_length());
-
-//}
-
-
-fn spawn_app() {
-    let server= zero2prod::run().expect("Failed to bind asddress");
-
+fn spawn_app() -> String {
+    let listener=TcpListener::bind("127.0.0.1:0")
+        .expect("Failed to bind random port");
+    let port = listener.local_addr().unwrap().port();
+    let server= zero2prod :: run(listener).expect("Failed to bind address");
     let _ = tokio::spawn(server);
+    format!("http://127.0.0.1:{}", port)
 }
