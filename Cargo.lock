@@ -3091,6 +3091,7 @@ dependencies = [
  "actix-web",
  "cargo-tarpaulin",
  "reqwest 0.12.5",
+ "serde",
  "tokio",
 ]
 
